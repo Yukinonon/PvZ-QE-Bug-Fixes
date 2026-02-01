@@ -1367,8 +1367,8 @@ void LawnApp::Init()
 	mAchievements = new Achievements(this);
 	mAchievements->InitAchievement();
 
-#ifdef _DEBUG
 	int aDuration = aTimer.GetDuration();
+#ifdef _DEBUG
 	TodTrace("loading: 'profiles' %d ms", aDuration);
 #endif
 	aTimer.Start();

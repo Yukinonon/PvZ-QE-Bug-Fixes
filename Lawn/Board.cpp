@@ -7720,43 +7720,26 @@ static void TodCrash()
 void Board::KeyChar(SexyChar theChar)
 {
 	bool aCanUseKeybinds = mApp->mBankKeybinds && (!mPaused || mApp->mGameScene == GameScenes::SCENE_PLAYING || mApp->mCrazyDaveState != CrazyDaveState::CRAZY_DAVE_OFF);
-	if (isdigit(theChar) && aCanUseKeybinds && mSeedBank->mY >= 0)
+	if (theChar >= _S('0') && theChar <= _S('9') && aCanUseKeybinds && mSeedBank->mY >= 0)
 	{
-		for (int i = 0; i < mSeedBank->mNumPackets; i++)
-		{
-			int aSeedIndex = i;
-			if (theChar == '0' + aSeedIndex && mSeedBank->mNumPackets > aSeedIndex)
-			{
-				if (mApp->mZeroNineBankFormat)
-				{
-					if (aSeedIndex == 0)
-						aSeedIndex = 9;
-					else
-						aSeedIndex--;
-				}
-				SeedPacket* aPacket = &mSeedBank->mSeedPackets[aSeedIndex];
-				if (aPacket->mPacketType == SeedType::SEED_NONE)	
-					break;
+		int aSeedIndex = !mApp->mZeroNineBankFormat ? theChar - _S('0') : theChar == _S('0') ? 9 : theChar - _S('1');
+		SeedPacket* aPacket = &mSeedBank->mSeedPackets[aSeedIndex];
+		if (aPacket->mPacketType == SEED_NONE)
+			return;
 
-				if (mCursorObject->mSeedBankIndex == aSeedIndex)
-				{
-					RefreshSeedPacketFromCursor();
-					mApp->PlayFoley(FoleyType::FOLEY_DROP);
-				}
-				else
-				{
-					if (mCursorObject->mCursorType != CursorType::CURSOR_TYPE_PLANT_FROM_BANK || mCursorObject->mSeedBankIndex != aSeedIndex)
-					{
-						if (mCursorObject->mCursorType == CursorType::CURSOR_TYPE_PLANT_FROM_BANK)
-							RefreshSeedPacketFromCursor();
-						else
-							ClearCursor();
-					}
-					aPacket->MouseDown(0, 0, 0);
-				}
-				break;
-			}
+		if (mCursorObject->mSeedBankIndex == aSeedIndex)
+		{
+			RefreshSeedPacketFromCursor();
+			mApp->PlayFoley(FoleyType::FOLEY_DROP);
+			return;
 		}
+
+		if (mCursorObject->mCursorType == CursorType::CURSOR_TYPE_PLANT_FROM_BANK)
+			RefreshSeedPacketFromCursor();
+		else
+			ClearCursor();
+
+		aPacket->MouseDown(aPacket->mX, aPacket->mY, 1);
 	}
 	else if (tolower(theChar) == _S('s') && aCanUseKeybinds && mShowShovel)
 	{
