@@ -927,12 +927,15 @@ void RenderParticle(Graphics* g, TodParticle* theParticle, const Color& theColor
 			{
 				aImage = gSexyAppBase->mResourceManager->GetImage(aPath);
 				gImageCache[aPath] = aImage;
+
+				// Init memory image only once.
+				if (aImage)
+					((MemoryImage*)aImage)->mD3DFlags |= D3DImageFlags::D3DImageFlag_MinimizeNumSubdivisions;
 			}
 		}
 	}
 	if (aImage == nullptr)
-		return;  
-	((MemoryImage*)aImage)->mD3DFlags |= D3DImageFlags::D3DImageFlag_MinimizeNumSubdivisions;
+		return; 
 
 	int aCelWidth = aImage->GetCelWidth();
 	int aCelHeight = aImage->GetCelHeight();
