@@ -672,8 +672,9 @@ bool D3DTester::Init(HWND theHWND, LPDIRECTDRAW7 theDDraw)
 		}
 		else
 		{
-			dwTotal += (aBPP/8)*aWidth*aHeight;
-			dwTotal /= (1024*1024);
+			// PopCap dumb overflow ahh moment.
+			dwTotal /= (1024 * 1024);
+			dwTotal += ((aBPP / 8) * aWidth * aHeight) / (1024 * 1024);
 			if (dwTotal < mMinVidMemory)
 				return Fail("Not enough video memory.");
 			else if (dwTotal < mRecommendedVidMemory)
@@ -711,6 +712,24 @@ bool D3DTester::Init(HWND theHWND, LPDIRECTDRAW7 theDDraw)
 				mDriverYear = aSystemTime.wYear;
 
 			CloseHandle(aFileHandle);
+		}
+		else
+		{
+			// Modern Windows don't store the graphics driver .dll in System32 so I trick the game to run command in cmd.
+			// It will open the console when running the app for the first time by the way.
+			std::string result;
+			char buffer[128];
+
+			FILE* pipe = _popen("wmic path win32_videocontroller get DriverDate", "r");
+			if (pipe)
+			{
+				while (fgets(buffer, sizeof(buffer), pipe))
+					result += buffer;
+
+				_pclose(pipe);
+				std::string year = result.substr(result.find_first_of("0123456789"), 4);
+				mDriverYear = std::stoi(year);
+			}
 		}
 
 		// Check supported cards
